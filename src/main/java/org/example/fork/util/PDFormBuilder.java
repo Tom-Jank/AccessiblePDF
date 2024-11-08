@@ -1,5 +1,6 @@
 package org.example.fork.util;
 
+import java.awt.Color;
 import org.apache.pdfbox.cos.*;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.*;
@@ -18,7 +19,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.viewerpreferences.PDViewerPreferences;
 import org.apache.xmpbox.XMPMetadata;
 import org.apache.xmpbox.schema.XMPSchema;
-import org.apache.xmpbox.schema.XmpSchemaException;
 import org.apache.xmpbox.xml.XmpSerializer;
 
 import javax.xml.transform.TransformerException;
@@ -38,13 +38,13 @@ public class PDFormBuilder {
   private PDStructureElement currentElem = null;
   private COSDictionary currentMarkedContentDictionary;
   private COSArray nums = new COSArray();
-  private COSArray numDictionaries = new COSArray();
+  public COSArray numDictionaries = new COSArray();
   private int currentMCID = 0;
   private int currentStructParent = 1;
   private final float PAGE_HEIGHT = PDRectangle.A4.getHeight();
   public final float PAGE_WIDTH = PDRectangle.A4.getWidth();
 
-  public PDFormBuilder(int initPages, String title) throws IOException, TransformerException, XmpSchemaException {
+  public PDFormBuilder(int initPages, String title) throws IOException, TransformerException {
     //Setup new document
     pdf = new PDDocument();
     acroForm = new PDAcroForm(pdf);
@@ -59,13 +59,13 @@ public class PDFormBuilder {
   public PDStructureElement drawElement(Cell textCell, float x, float y, float height,
       PDStructureElement parent, String structType, int pageIndex) throws IOException {
 
-    setNextMarkedContentDictionary();
-    currentElem = addContentToParent(
-        COSName.ARTIFACT, structType, pages.get(pageIndex), parent, textCell.getText());
-
     try (var contents
         = new PDPageContentStream(
-                pdf, pages.get(pageIndex), PDPageContentStream.AppendMode.APPEND, false)) {
+        pdf, pages.get(pageIndex), PDPageContentStream.AppendMode.APPEND, false)) {
+
+      setNextMarkedContentDictionary();
+      currentElem = addContentToParent(
+        COSName.ARTIFACT, structType, pages.get(pageIndex), parent, textCell.getText());
 
       contents.beginMarkedContent(COSName.P, PDPropertyList.create(currentMarkedContentDictionary));
       drawCellText(textCell, x + 5, y + height + textCell.getFontSize(), contents);
